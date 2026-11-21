@@ -1,18 +1,30 @@
 # React Essential
 
-A React + Vite starter with the essentials already set up: file-based routing, server-state handling, Base UI components, validated env, tests, lint, format, CI and an agent guide.
+[![CI](https://github.com/essential-registry/react-essential/actions/workflows/ci.yml/badge.svg)](https://github.com/essential-registry/react-essential/actions/workflows/ci.yml) ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 
-## Stack
+A React 19 + Vite single-page-app starter: file-based routing, server-state handling, accessible Base UI components, validated environment, tests, lint, format, Docker, CI and an agent guide.
 
-- React 19, Vite and TypeScript (strict), Tailwind CSS v4
-- TanStack Router (file routes) and TanStack Query
-- [Base UI](https://base-ui.com) primitives, shadcn-style
-- zod for env and API data
-- vitest and Testing Library
-- oxlint (type-aware) and oxfmt
-- pnpm, husky, GitHub Actions, Docker (nginx)
+Part of [Essential](https://github.com/essential-registry): starter templates with the tooling, structure, docs and AI-agent guide already in place.
 
-## Run
+## What you get
+
+- **React 19**, Vite, strict TypeScript, Tailwind CSS v4
+- **TanStack Router** (file routes, generated route tree) and **TanStack Query** for server state
+- **Feature-first structure** with a `gen:feature` script and zod schemas as the source of types
+- **Typed API client** (`src/lib/api.ts`) that validates every response with zod, and a validated `VITE_*` env (`src/lib/env.ts`)
+- **Base UI** primitives in shadcn style, a theme provider (light, dark, system) and document head management
+- **vitest** and Testing Library, **oxlint** (type-aware, warnings denied) and **oxfmt**
+- **Husky**, **GitHub Actions** CI, **Dockerfile** serving the build with nginx
+- **Docs and AGENTS.md** for people and coding agents
+
+## Requirements
+
+- [Node.js](https://nodejs.org) 22 or newer
+- [pnpm](https://pnpm.io) 12 (`corepack enable` picks the right version from `package.json`)
+
+## Quick start
+
+Click **Use this template** on GitHub (or run `gh repo create my-project --template essential-registry/react-essential`), then:
 
 ```bash
 pnpm install
@@ -20,37 +32,65 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-## Scripts
+Open <http://localhost:5173>.
 
-```bash
-pnpm typecheck       # tsc --noEmit
-pnpm lint            # oxlint, type-aware, warnings denied
-pnpm format:check    # oxfmt check
-pnpm test            # vitest
-pnpm build           # production build into dist/
-pnpm gen:feature x   # scaffold src/features/x
-pnpm run ci          # the gate CI runs (non-mutating)
-pnpm build:prepare   # fix lint/format, then the full gate
-```
+## Commands
 
-## Structure
+| Command                                           | What it does                                   |
+| ------------------------------------------------- | ---------------------------------------------- |
+| `pnpm dev`                                        | Start Vite                                     |
+| `pnpm build` / `pnpm preview`                     | Type-check and build into `dist/` / preview it |
+| `pnpm typecheck`                                  | `tsc --noEmit`                                 |
+| `pnpm lint` / `pnpm lint:fix`                     | oxlint, type-aware, warnings denied / auto-fix |
+| `pnpm format` / `pnpm format:check`               | oxfmt write / check                            |
+| `pnpm test` / `pnpm test:watch` / `pnpm coverage` | vitest                                         |
+| `pnpm gen:feature <name>`                         | Scaffold `src/features/<name>`                 |
+| `pnpm run ci`                                     | The non-mutating gate CI runs                  |
+| `pnpm build:prepare`                              | Fix lint and format, then run the full gate    |
+
+## Project structure
 
 ```text
 src/
   routes/       TanStack Router file routes (routeTree.gen.ts is generated)
-  features/     one folder per product area (public API in index.ts)
+  features/     one folder per product area (index.ts = public API, schemas.ts)
   components/   shared UI; components/ui = Base UI primitives
   providers/    theme, query client, document head
-  hooks/ lib/   shared hooks, env, typed API client, helpers
-  styles/       Tailwind v4 theme tokens
+  hooks/        shared hooks
+  lib/          env.ts (validated VITE_* env), api.ts (typed fetch), utils.ts
+  styles/       root-layout.css (Tailwind v4 theme tokens)
 tests/          vitest setup
 docs/           architecture, configuration, tooling
+scripts/        gen-feature.mjs
 ```
+
+## Architecture
+
+Dependencies point down only: `routes` -> `features` -> `components` / `lib` / `providers`. Routes are thin and compose features; a feature is imported only through its `index.ts`. Server data goes through TanStack Query and `lib/api.ts`, which parses responses with zod. `routeTree.gen.ts` is generated by the router plugin and never edited by hand.
+
+Full details: [`docs/architecture.md`](docs/architecture.md).
+
+## Documentation
+
+- [`docs/architecture.md`](docs/architecture.md): layers, folders and how the pieces fit
+- [`docs/configuration.md`](docs/configuration.md): environment variables and site settings
+- [`docs/tooling.md`](docs/tooling.md): every command, tool and the quality gate
+
+## Quality gate and CI
+
+`pnpm run ci` runs typecheck, lint, format check, tests and the production build. GitHub Actions runs exactly that on every push and pull request, and the Husky pre-commit hook runs the fast checks. `pnpm build:prepare` does the same but fixes lint and formatting first.
 
 ## Working with AI agents
 
-`AGENTS.md` is the guide agents follow (`CLAUDE.md` points to it). `.claude/` has permissions, a formatter hook, a reviewer agent and skills.
+[`AGENTS.md`](AGENTS.md) is the guide coding agents follow: commands, layout, conventions and a "never" list (`CLAUDE.md` points to it). `.claude/` adds safe permissions, a formatter hook, a read-only reviewer agent and task skills. Commits always use your own git identity; the guide tells agents not to add attribution lines and not to commit unless asked.
+
+## Make it yours
+
+1. Set `VITE_SITE_NAME` and `VITE_API_URL` in `.env.local` (and `.env.example`).
+2. Replace `src/routes/index.tsx`, add your first feature with `pnpm gen:feature`.
+3. Change colours in `src/styles/root-layout.css`.
+4. Rename the package in `package.json` and the title in `index.html`.
 
 ## License
 
-MIT.
+MIT. See [LICENSE](LICENSE).
