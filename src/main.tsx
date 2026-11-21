@@ -1,18 +1,14 @@
-import {
-  type AnyRouter,
-  createRouter,
-  RouterProvider,
-} from "@tanstack/react-router";
-import * as React from "react";
-import * as ReactDOM from "react-dom/client";
-import "@/styles/root-layout.css";
-import { createHead, UnheadProvider } from "@unhead/react/client";
-import { ThemeProvider } from "@/lib/theme-provider";
+import { createRouter, RouterProvider } from "@tanstack/react-router";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+
+import { AppProviders } from "@/providers/app-providers";
+
 import { routeTree } from "./routeTree.gen";
 
-export const head: ReturnType<typeof createHead> = createHead();
+import "@/styles/root-layout.css";
 
-const router = createRouter({ routeTree }) as AnyRouter;
+const router = createRouter({ routeTree });
 
 declare module "@tanstack/react-router" {
   interface Register {
@@ -20,12 +16,13 @@ declare module "@tanstack/react-router" {
   }
 }
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <ThemeProvider defaultTheme={"system"} storageKey={"vite-ui-theme"}>
-      <UnheadProvider head={head}>
-        <RouterProvider router={router} />
-      </UnheadProvider>
-    </ThemeProvider>
-  </React.StrictMode>
+const container = document.getElementById("root");
+if (!container) throw new Error("Missing #root element");
+
+createRoot(container).render(
+  <StrictMode>
+    <AppProviders>
+      <RouterProvider router={router} />
+    </AppProviders>
+  </StrictMode>
 );
